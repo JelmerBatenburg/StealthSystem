@@ -14,6 +14,7 @@ public class EnemyDetection : MonoBehaviour
     public Transform head;
     public float headRotationSpeed;
     public float headRotateAmount;
+    public float headRotateDelay;
 
     [Header("Settings")]
     public LayerMask detectionMask;
@@ -29,7 +30,7 @@ public class EnemyDetection : MonoBehaviour
     public Vector3 lastKnowPosition;
     private Vector3 startPos;
 
-    public enum CurrentState { Idle, Following, Lost}
+    public enum CurrentState { Idle, Following, Lost, Suspicious}
     public CurrentState currentState;
 
     public void Start()
@@ -45,12 +46,14 @@ public class EnemyDetection : MonoBehaviour
             case CurrentState.Following:
                 SetWalkPosition();
                 agent.SetDestination(lastKnowPosition);
+                Vector3 lookDir = new Vector3(target.transform.position.x, head.position.y, target.transform.position.z) - head.position;
+                head.rotation = Quaternion.Lerp(head.rotation, Quaternion.LookRotation(lookDir, Vector3.up), Time.deltaTime * headRotationSpeed);
                 break;
             case CurrentState.Lost:
                 if(Vector3.Distance(transform.position, lastKnowPosition) <= positionDistance)
                 {
                     agent.SetDestination(startPos);
-                    currentState = CurrentState.Idle;
+                    currentState = CurrentState.Suspicious;
                 }
                 break;
         }
@@ -60,11 +63,12 @@ public class EnemyDetection : MonoBehaviour
     {
         bool right = true;
         float currentRotation = 0;
-        while (currentState == CurrentState.Lost)
+        while (currentState == CurrentState.Lost || currentState == CurrentState.Suspicious)
         {
             Vector3 rightDir = Quaternion.Euler(Vector3.up * headRotateAmount) * transform.forward;
             Vector3 leftDir = Quaternion.Euler(Vector3.up * -headRotateAmount) * transform.forward;
-            head.transform.LookAt(head.position + Vector3.Lerp(rightDir, leftDir, (currentRotation / 2f) + 0.5f));
+            Quaternion lookRot = Quaternion.LookRotation(Vector3.Lerp(rightDir, leftDir, (currentRotation / 2f) + 0.5f), Vector3.up);
+            head.rotation = Quaternion.Lerp(head.rotation, lookRot, Time.deltaTime * headRotationSpeed);
             switch (right)
             {
                 case true:
@@ -102,7 +106,7 @@ public class EnemyDetection : MonoBehaviour
             if (CheckDetect().Count > 0)
             {
                 currentDetectLevel += Time.deltaTime;
-                if (currentDetectLevel >= detectedTime || currentState == CurrentState.Lost)
+                if (currentDetectLevel >= ((currentState == CurrentState.Suspicious) ? detectedTime / 2f : detectedTime) || currentState == CurrentState.Lost)
                 {
                     target = CheckDetect()[0];
                     currentState = CurrentState.Following;
