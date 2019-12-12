@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class Camera : EnemyDetection
+public class CameraDetection : EnemyDetection
 {
     public LayerMask guardMask;
     public float guardDetectRange;
