@@ -26,6 +26,10 @@ public class CharacterMovement : MonoBehaviour
             force.z = 0;
         if (Physics.SphereCast(transform.position, checkWidth, -transform.forward, out hit, checkRange, mask) && force.z < 0)
             force.z = 0;
+        if (Physics.SphereCast(transform.position, checkWidth, transform.right, out hit, checkRange, mask) && force.x > 0)
+            force.x = 0;
+        if (Physics.SphereCast(transform.position, checkWidth, -transform.right, out hit, checkRange, mask) && force.x < 0)
+            force.x = 0;
 
     }
 }
