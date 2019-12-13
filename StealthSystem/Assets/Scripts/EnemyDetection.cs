@@ -1,7 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.AI;
+using UnityEngine.UI;
 
 public class EnemyDetection : MonoBehaviour
 {
@@ -21,6 +21,18 @@ public class EnemyDetection : MonoBehaviour
     public float currentDetectLevel;
     public string detectionTag;
 
+    [Header("DetectionDisplay")]
+    public Image fillDisplay;
+    public Gradient gradientDisplay;
+
+    public void DisplayGradient()
+    {
+        fillDisplay.gameObject.SetActive(currentDetectLevel > 0);
+        fillDisplay.transform.LookAt(Camera.main.transform.position);
+        fillDisplay.fillAmount = (1f / detectedTime) * currentDetectLevel;
+        fillDisplay.color = gradientDisplay.Evaluate(fillDisplay.fillAmount);
+    }
+
     public List<GameObject> CheckDetect()
     {
         Collider[] detectedColliders = Physics.OverlapSphere(detectPosition.position, detectRange, detectionMask);
@@ -28,10 +40,10 @@ public class EnemyDetection : MonoBehaviour
 
         foreach (Collider col in detectedColliders)
         {
-            Vector3 dir = col.transform.position - detectPosition.position;
+            Vector3 dir = col.ClosestPoint(detectPosition.position) - detectPosition.position;
             RaycastHit hit = new RaycastHit();
             if (Mathf.Abs(Vector3.Angle(dir, detectPosition.forward)) <= detectWidth)
-                if (Physics.Raycast(detectPosition.position, dir, out hit) && hit.collider == col)
+                if (Physics.Raycast(detectPosition.position, dir, out hit) && hit.collider == col && hit.transform.GetComponent<PlayerDetection>().CanBeDetected())
                 {
                     detectedPlayers.Add(col.gameObject);
                     Debug.DrawLine(detectPosition.position, col.transform.position, Color.red);

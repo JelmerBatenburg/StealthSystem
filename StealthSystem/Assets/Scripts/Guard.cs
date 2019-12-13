@@ -15,18 +15,25 @@ public class Guard : EnemyDetection
     public Vector3 lastKnowPosition;
     public Vector3[] path;
     private int currentPathIndex;
+    private bool activeWalk = true;
+    public float idleToWalkDelay;
+    public float suspicionDetectMultiplier;
+
     public enum CurrentState { Idle, Following, Lost, Suspicious }
     public CurrentState currentState;
 
     public void FollowPath()
     {
-        if (Vector3.Distance(transform.position, path[currentPathIndex]) <= positionDistance)
-            if (currentPathIndex == path.Length - 1)
-                currentPathIndex = 0;
-            else
-                currentPathIndex++;
+        if (activeWalk)
+        {
+            if (Vector3.Distance(transform.position, path[currentPathIndex]) <= positionDistance)
+                if (currentPathIndex == path.Length - 1)
+                    currentPathIndex = 0;
+                else
+                    currentPathIndex++;
 
-        agent.SetDestination(path[currentPathIndex]);
+            agent.SetDestination(path[currentPathIndex]);
+        }
     }
 
     public int GetClosestPathNode()
@@ -41,6 +48,7 @@ public class Guard : EnemyDetection
     public void Update()
     {
         UpdateDetection();
+        DisplayGradient();
         switch (currentState)
         {
             case CurrentState.Following:
@@ -53,6 +61,7 @@ public class Guard : EnemyDetection
             case CurrentState.Lost:
                 if (Vector3.Distance(transform.position, lastKnowPosition) <= positionDistance)
                 {
+                    StartCoroutine(WalkDelay(idleToWalkDelay));
                     currentState = CurrentState.Suspicious;
                     currentPathIndex = GetClosestPathNode();
                 }
@@ -66,6 +75,13 @@ public class Guard : EnemyDetection
                 FollowPath();
                 break;
         }
+    }
+
+    public IEnumerator WalkDelay(float time)
+    {
+        activeWalk = false;
+        yield return new WaitForSeconds(time);
+        activeWalk = true;
     }
 
     public IEnumerator HeadRotation()
@@ -114,14 +130,14 @@ public class Guard : EnemyDetection
         if (!target)
             if (CheckDetect().Count > 0)
             {
-                currentDetectLevel += Time.deltaTime;
-                if (currentDetectLevel >= ((currentState == CurrentState.Suspicious) ? detectedTime / 2f : detectedTime) || currentState == CurrentState.Lost)
+                currentDetectLevel += Time.deltaTime * ((currentState == CurrentState.Suspicious) ? suspicionDetectMultiplier : 1f);
+                if (currentDetectLevel >= detectedTime || currentState == CurrentState.Lost)
                 {
                     target = CheckDetect()[0];
                     currentState = CurrentState.Following;
                 }
             }
-            else if (currentDetectLevel >= 0 || currentState == CurrentState.Idle)
+            else if (currentDetectLevel > 0 && (currentState == CurrentState.Idle || currentState == CurrentState.Suspicious))
                 currentDetectLevel -= detectedDropTime * Time.deltaTime;
     }
 
