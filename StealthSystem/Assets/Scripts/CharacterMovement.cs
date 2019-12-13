@@ -11,7 +11,15 @@ public class CharacterMovement : MonoBehaviour
     public float checkWidth;
     public LayerMask mask;
 
+    //Update
     public void Update()
+    {
+        Move();
+    }
+
+    //Move
+    ///Detects the input and applies the force after checking for walls
+    public void Move()
     {
         force += new Vector3(Input.GetAxisRaw("Horizontal"), 0, Input.GetAxisRaw("Vertical")).normalized * Time.deltaTime * movementSpeed;
         force = Vector3.Lerp(force, Vector3.zero, Time.deltaTime * drag);
@@ -19,6 +27,8 @@ public class CharacterMovement : MonoBehaviour
         transform.Translate(force * Time.deltaTime);
     }
 
+    //CheckForWalls
+    ///Will search for the walls and chenges the force
     public void CheckForWalls()
     {
         RaycastHit hit = new RaycastHit();

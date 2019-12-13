@@ -11,11 +11,14 @@ public class PlayerDetection : MonoBehaviour
     public GameObject cloak;
     public string cloakInput;
 
+    //Uodate
     public void Update()
     {
         Cloak();
     }
 
+    //Cloak
+    ///Switches from cloak mode
     public void Cloak()
     {
         if (Input.GetButtonDown(cloakInput))
@@ -25,6 +28,8 @@ public class PlayerDetection : MonoBehaviour
         }
     }
 
+    //Can Be detected
+    ///This is called to check if the player is detectable
     public bool CanBeDetected()
     {
         bool detected = true;
