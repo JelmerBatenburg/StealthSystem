@@ -10,6 +10,13 @@ public class PlayerDetection : MonoBehaviour
     [Header("Cloak Settings")]
     public GameObject cloak;
     public string cloakInput;
+    public float cloakTime;
+    private float currentCloakTime;
+
+    public void Start()
+    {
+        currentCloakTime = cloakTime;
+    }
 
     //Uodate
     public void Update()
@@ -21,11 +28,23 @@ public class PlayerDetection : MonoBehaviour
     ///Switches from cloak mode
     public void Cloak()
     {
-        if (Input.GetButtonDown(cloakInput))
+        if (Input.GetButtonDown(cloakInput) && currentCloakTime > 0)
         {
             cloaked = !cloaked;
             cloak.SetActive(cloaked);
         }
+
+        if (cloaked)
+        {
+            currentCloakTime -= Time.deltaTime;
+            if (Input.GetButton("Horizontal") || Input.GetButton("Vertical") || currentCloakTime <= 0)
+            {
+                cloaked = false;
+                cloak.SetActive(cloaked);
+            }
+        }
+        else if (currentCloakTime < cloakTime)
+            currentCloakTime += Time.deltaTime;
     }
 
     //Can Be detected
