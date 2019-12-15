@@ -12,6 +12,7 @@ public class CameraFollowScript : MonoBehaviour
     ///A really simple follow script
     public void Update()
     {
-        transform.position = Vector3.Lerp(transform.position, new Vector3(followObject.position.x, transform.position.y, followObject.position.z + zoffset), Time.deltaTime * lerpSpeed);
+        if (followObject)
+            transform.position = Vector3.Lerp(transform.position, new Vector3(followObject.position.x, transform.position.y, followObject.position.z + zoffset), Time.deltaTime * lerpSpeed);
     }
 }

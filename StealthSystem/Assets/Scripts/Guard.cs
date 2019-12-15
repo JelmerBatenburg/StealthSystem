@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.AI;
+using UnityEngine.UI;
 
 public class Guard : EnemyDetection
 {
@@ -23,8 +24,35 @@ public class Guard : EnemyDetection
     public NavMeshAgent agent;
     public GameObject target;
 
+    [Header("DevelopmentOptions")]
+    public Text stateDisplay;
+    public float killArea;
+    public bool allowKill;
+
     public enum CurrentState { Idle, Following, Lost, Suspicious }
     public CurrentState currentState;
+
+    //DisplayState
+    ///Displays the current state you are in for presentation purposes
+    public void DisplayState()
+    {
+        stateDisplay.transform.LookAt(Camera.main.transform.position);
+        switch (currentState)
+        {
+            case CurrentState.Following:
+                stateDisplay.text = "Following";
+                break;
+            case CurrentState.Idle:
+                stateDisplay.text = "Idle";
+                break;
+            case CurrentState.Lost:
+                stateDisplay.text = "Lost";
+                break;
+            case CurrentState.Suspicious:
+                stateDisplay.text = "Suspicious";
+                break;
+        }
+    }
 
     //Update
     public void Update()
@@ -32,6 +60,7 @@ public class Guard : EnemyDetection
         UpdateDetection();
         DisplayGradient();
         StateCheck();
+        DisplayState();
     }
 
     //StateCheck
@@ -45,7 +74,11 @@ public class Guard : EnemyDetection
             ///It will also look at the target so it will stay in its field of view
             case CurrentState.Following:
                 if (target)
+                {
                     lastKnowPosition = new Vector3(target.transform.position.x, transform.position.y, target.transform.position.z);
+                    if (allowKill && Vector3.Distance(transform.position, lastKnowPosition) <= killArea)
+                        Debug.Log("Caught");
+                }
                 agent.SetDestination(target.transform.position);
                 Vector3 lookDir = new Vector3(target.transform.position.x, detectPosition.position.y, target.transform.position.z) - detectPosition.position;
                 detectPosition.rotation = Quaternion.Lerp(detectPosition.rotation, Quaternion.LookRotation(lookDir, Vector3.up), Time.deltaTime * headRotationSpeed);

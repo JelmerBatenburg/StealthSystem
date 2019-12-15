@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class PlayerDetection : MonoBehaviour
 {
@@ -12,6 +13,8 @@ public class PlayerDetection : MonoBehaviour
     public string cloakInput;
     public float cloakTime;
     private float currentCloakTime;
+    public Image cloakDisplay;
+
 
     public void Start()
     {
@@ -45,6 +48,7 @@ public class PlayerDetection : MonoBehaviour
         }
         else if (currentCloakTime < cloakTime)
             currentCloakTime += Time.deltaTime;
+        cloakDisplay.fillAmount = (1f / cloakTime) * currentCloakTime;
     }
 
     //Can Be detected
